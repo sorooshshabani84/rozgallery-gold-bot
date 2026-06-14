@@ -19,39 +19,26 @@ def send_message(text):
     })
 
 
-def get_price(url):def get_price(url):
+def get_price(url):
     try:
         r = requests.get(url, headers=headers, timeout=10)
         soup = BeautifulSoup(r.text, "html.parser")
 
-        # TGJU قیمت اصلی رو داخل این span می‌ذاره
-        price = soup.find("span", {"data-col": "info.last_trade.PDrCotVal"})
+        # فقط همه عددهای داخل صفحه رو می‌گیریم
+        text = soup.get_text()
 
-        if price:
-            return price.text.strip()
+        # پیدا کردن اولین عدد بزرگ (قیمت‌ها معمولاً این شکلی‌اند)
+        import re
+        numbers = re.findall(r'[\d,]{4,}', text)
 
-        # fallback (روش دوم)
-        price = soup.select_one(".price")
-        if price:
-            return price.text.strip()
+        if numbers:
+            return numbers[0]
 
         return "نامشخص"
 
-    except:
+    except Exception as e:
+        print("ERROR:", e)
         return "نامشخص"
-
-
-def get_data():
-    dollar = get_price("https://www.tgju.org/profile/price_dollar_rl")
-    gold18 = get_price("https://www.tgju.org/profile/geram18")
-    ounce = get_price("https://www.tgju.org/profile/ons")
-
-    emami = get_price("https://www.tgju.org/profile/sekee")
-    nim = get_price("https://www.tgju.org/profile/nim")
-    rob = get_price("https://www.tgju.org/profile/rob")
-
-    return dollar, gold18, ounce, emami, nim, rob
-
 
 def job():
     dollar, gold18, ounce, emami, nim, rob = get_data()
