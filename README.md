@@ -1,0 +1,1 @@
+# rozgallery-gold-bot
