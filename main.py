@@ -3,7 +3,7 @@ import time
 import schedule
 import requests
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+BOT_TOKEN = os.getenv("8682876117:AAHcJxShwgr0UufSW5QntUWaSWwea1PQGjY")
 CHANNEL = "@rozgallerydaily"
 
 def send_message(text):
