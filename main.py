@@ -1,48 +1,69 @@
 import os
 import time
-import schedule
 import requests
+import schedule
+from bs4 import BeautifulSoup
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL = "@rozgallerydaily"
 
+headers = {
+    "User-Agent": "Mozilla/5.0"
+}
+
 def send_message(text):
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+    requests.post(url, json={
+        "chat_id": CHANNEL,
+        "text": text
+    })
+
+
+def get_price(url):
     try:
-        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+        r = requests.get(url, headers=headers, timeout=10)
+        soup = BeautifulSoup(r.text, "lxml")
+        price = soup.select_one(".value")
+        return price.text.strip() if price else "نامشخص"
+    except:
+        return "نامشخص"
 
-        r = requests.post(
-            url,
-            json={
-                "chat_id": CHANNEL,
-                "text": text
-            }
-        )
 
-        print("STATUS:", r.status_code)
-        print("RESPONSE:", r.text)
+def get_data():
+    dollar = get_price("https://www.tgju.org/profile/price_dollar_rl")
+    gold18 = get_price("https://www.tgju.org/profile/geram18")
+    ounce = get_price("https://www.tgju.org/profile/ons")
 
-    except Exception as e:
-        print("ERROR:", e)
+    emami = get_price("https://www.tgju.org/profile/sekee")
+    nim = get_price("https://www.tgju.org/profile/nim")
+    rob = get_price("https://www.tgju.org/profile/rob")
+
+    return dollar, gold18, ounce, emami, nim, rob
+
 
 def job():
-    print("JOB RUNNING...")
+    dollar, gold18, ounce, emami, nim, rob = get_data()
 
-    send_message("""
-📈 بازار طلا و ارز
+    text = f"""📈 بازار طلا و ارز (زنده)
 
-🟡 طلای ۱۸ عیار: در حال دریافت...
-💵 دلار: در حال دریافت...
-🌍 اونس جهانی: در حال دریافت...
+🟡 طلای ۱۸ عیار: {gold18}
+💵 دلار: {dollar}
+🌍 اونس جهانی: {ounce}
 
-🪙 سکه امامی: در حال دریافت...
-🪙 نیم سکه: در حال دریافت...
-🪙 ربع سکه: در حال دریافت...
+🪙 سکه امامی: {emami}
+🪙 نیم سکه: {nim}
+🪙 ربع سکه: {rob}
 
 @rozgallerydaily
-""")
+"""
 
+    send_message(text)
+
+
+# اجرای اولیه
 job()
 
+# هر 10 دقیقه
 schedule.every(10).minutes.do(job)
 
 while True:
