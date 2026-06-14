@@ -19,12 +19,24 @@ def send_message(text):
     })
 
 
-def get_price(url):
+def get_price(url):def get_price(url):
     try:
         r = requests.get(url, headers=headers, timeout=10)
-        soup = BeautifulSoup(r.text, "lxml")
-        price = soup.select_one(".value")
-        return price.text.strip() if price else "نامشخص"
+        soup = BeautifulSoup(r.text, "html.parser")
+
+        # TGJU قیمت اصلی رو داخل این span می‌ذاره
+        price = soup.find("span", {"data-col": "info.last_trade.PDrCotVal"})
+
+        if price:
+            return price.text.strip()
+
+        # fallback (روش دوم)
+        price = soup.select_one(".price")
+        if price:
+            return price.text.strip()
+
+        return "نامشخص"
+
     except:
         return "نامشخص"
 
